@@ -10,16 +10,19 @@ namespace DemoTiendaApiController.Controllers
     public class CategoriasController : ControllerBase
     {
         private readonly CategoriaService _categoriaService;
+        private readonly ILogger<CategoriasController> _logger;
 
-        public CategoriasController(CategoriaService categoriaService)
+        public CategoriasController(CategoriaService categoriaService, ILogger<CategoriasController> logger)
         {
             _categoriaService = categoriaService;
+            _logger = logger;
         }
 
         // GET: api/Categorias
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoria()
+        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategorias()
         {
+            _logger.LogInformation("Request: {url}", HttpContext.Request.Path.Value);
             return Ok(await _categoriaService.ListAsync());
         }
 

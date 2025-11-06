@@ -1,18 +1,25 @@
 ﻿using DemoTienda.Application.Interfaces;
 using DemoTienda.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace DemoTienda.Application.Services;
 
 public class CategoriaService
 {
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly ILogger<CategoriaService> _logger;
 
-    public CategoriaService(ICategoriaRepository categoriaRepository)
+    public CategoriaService(ICategoriaRepository categoriaRepository, ILogger<CategoriaService> logger)
     {
         _categoriaRepository = categoriaRepository;
+        _logger = logger;
     }
 
-    public Task<IEnumerable<Categoria>> ListAsync() => _categoriaRepository.ListAsync();
+    public Task<IEnumerable<Categoria>> ListAsync()
+    {
+        _logger.LogInformation("Listando categorias");
+        return _categoriaRepository.ListAsync();
+    }
     public Task<Categoria?> GetByIdAsync(int id) => _categoriaRepository.GetByIdAsync(id);
     public Task<Categoria> AddAsync(Categoria categoria) => _categoriaRepository.AddAsync(categoria);
     public async Task UpdateAsync(Categoria categoria)
