@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11205.157 d18.0
+VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTienda.Api", "DemoTiendaApiController\DemoTienda.Api.csproj", "{49275B23-A369-4A1C-BA7E-3B9FFD0C9AB5}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTienda.Application", "DemoTienda.Application\DemoTienda.Application.csproj", "{4F8590FE-62CD-4D51-8C4A-E27BB7375DCB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTienda.Infraestructure", "DemoTienda.Infraestructure\DemoTienda.Infraestructure.csproj", "{C17342A3-CAE5-4CB1-990E-8863F66D2387}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTienda.Migrations", "DemoTienda.Migrations\DemoTienda.Migrations.csproj", "{8E290353-83E2-4468-92DD-AC2D6D19633A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{C17342A3-CAE5-4CB1-990E-8863F66D2387}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C17342A3-CAE5-4CB1-990E-8863F66D2387}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C17342A3-CAE5-4CB1-990E-8863F66D2387}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E290353-83E2-4468-92DD-AC2D6D19633A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E290353-83E2-4468-92DD-AC2D6D19633A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E290353-83E2-4468-92DD-AC2D6D19633A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E290353-83E2-4468-92DD-AC2D6D19633A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

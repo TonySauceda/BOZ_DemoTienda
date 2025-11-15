@@ -1,10 +1,12 @@
 ﻿using DemoTienda.Domain.Entities;
 using DemoTienda.Domain.Views;
+using DemoTienda.Infraestructure.Auth;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DemoTienda.Infraestructure.Context;
 
-public partial class DemoTiendaContext : DbContext
+public partial class DemoTiendaContext : IdentityDbContext<AppUser>
 {
     public DemoTiendaContext()
     {
@@ -23,8 +25,11 @@ public partial class DemoTiendaContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Categoria>(entity =>
         {
+            entity.ToTable("Categoria", t => t.ExcludeFromMigrations());
             entity.HasIndex(e => e.Nombre, "UX_Categoria_Nombre").IsUnique();
 
             entity.Property(e => e.Descripcion).HasMaxLength(500);
@@ -37,7 +42,7 @@ public partial class DemoTiendaContext : DbContext
 
         modelBuilder.Entity<Producto>(entity =>
         {
-            entity.ToTable("Producto");
+            entity.ToTable("Producto", t => t.ExcludeFromMigrations());
 
             entity.HasIndex(e => e.EsActivo, "IX_Producto_EsActivo");
 
