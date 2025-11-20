@@ -17,7 +17,7 @@ public class CategoriaRepository : ICategoriaRepository
     {
         entity.FechaCreacion = DateTime.UtcNow;
 
-        _dbContext.Categoria.Add(entity);
+        _dbContext.Categorias.Add(entity);
         await _dbContext.SaveChangesAsync();
 
         return entity;
@@ -25,26 +25,26 @@ public class CategoriaRepository : ICategoriaRepository
 
     public async Task DeleteAsync(Categoria entity)
     {
-        _dbContext.Categoria.Remove(entity);
+        _dbContext.Categorias.Remove(entity);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task<Categoria?> GetByIdAsync(int id)
     {
-        return await _dbContext.Categoria
+        return await _dbContext.Categorias
             .SingleOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<IEnumerable<Categoria>> ListAsync()
     {
-        return await _dbContext.Categoria
+        return await _dbContext.Categorias
             .AsNoTracking()
             .ToListAsync();
     }
 
     public async Task UpdateAsync(Categoria entity)
     {
-        _dbContext.Categoria.Update(entity);
+        _dbContext.Categorias.Update(entity);
         await _dbContext.SaveChangesAsync();
     }
 }

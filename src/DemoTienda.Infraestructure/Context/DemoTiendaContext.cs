@@ -8,16 +8,19 @@ namespace DemoTienda.Infraestructure.Context;
 
 public partial class DemoTiendaContext : IdentityDbContext<AppUser>
 {
+    private readonly bool IsUnitTestContext;
     public DemoTiendaContext()
     {
+        IsUnitTestContext = false;
     }
 
-    public DemoTiendaContext(DbContextOptions<DemoTiendaContext> options)
+    public DemoTiendaContext(DbContextOptions<DemoTiendaContext> options, bool unitTestContext = false)
         : base(options)
     {
+        IsUnitTestContext = unitTestContext;
     }
 
-    public virtual DbSet<Categoria> Categoria { get; set; }
+    public virtual DbSet<Categoria> Categorias { get; set; }
 
     public virtual DbSet<Producto> Productos { get; set; }
 
@@ -29,7 +32,11 @@ public partial class DemoTiendaContext : IdentityDbContext<AppUser>
 
         modelBuilder.Entity<Categoria>(entity =>
         {
-            entity.ToTable("Categoria", t => t.ExcludeFromMigrations());
+            if (IsUnitTestContext)
+                entity.ToTable("Categoria");
+            else
+                entity.ToTable("Categoria", t => t.ExcludeFromMigrations());
+
             entity.HasIndex(e => e.Nombre, "UX_Categoria_Nombre").IsUnique();
 
             entity.Property(e => e.Descripcion).HasMaxLength(500);
@@ -42,7 +49,10 @@ public partial class DemoTiendaContext : IdentityDbContext<AppUser>
 
         modelBuilder.Entity<Producto>(entity =>
         {
-            entity.ToTable("Producto", t => t.ExcludeFromMigrations());
+            if (IsUnitTestContext)
+                entity.ToTable("Producto");
+            else
+                entity.ToTable("Producto", t => t.ExcludeFromMigrations());
 
             entity.HasIndex(e => e.EsActivo, "IX_Producto_EsActivo");
 
