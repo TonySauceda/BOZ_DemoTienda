@@ -32,6 +32,7 @@ public class ProductoRepository : IProductoRepository
     public async Task<Producto?> GetByIdAsync(int id)
     {
         return await _dbContext.Productos
+            .Include(p => p.IdCategoriaNavigation)
             .SingleOrDefaultAsync(p => p.Id == id);
     }
 

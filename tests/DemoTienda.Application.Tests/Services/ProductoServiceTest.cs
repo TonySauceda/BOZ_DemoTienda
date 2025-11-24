@@ -1,5 +1,6 @@
-﻿using DemoTienda.Application.Services;
-using DemoTienda.Domain.Entities;
+﻿using DemoTienda.Application.DTOs.Producto;
+using DemoTienda.Application.Extensions;
+using DemoTienda.Application.Services;
 using DemoTienda.Infraestructure.Context;
 using DemoTienda.Infraestructure.Repository;
 using DemoTienda.Mocks;
@@ -24,8 +25,9 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
     private ProductoService GetProductoService(DemoTiendaContext demoTiendaContext)
     {
         var productoRepository = new ProductoRepository(demoTiendaContext);
+        var categoriaRepository = new CategoriaRepository(demoTiendaContext);
 
-        return new ProductoService(productoRepository);
+        return new ProductoService(productoRepository, categoriaRepository);
     }
 
     [Fact]
@@ -42,7 +44,7 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
         result.Count().ShouldBe(products.Count);
-        result.ShouldBeEquivalentTo(products);
+        result.ShouldBeEquivalentTo(products.ToDto());
     }
 
     [Fact]
@@ -56,7 +58,9 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
         var result = await productoService.GetByIdAsync(int.MaxValue);
 
         // Assert
-        result.ShouldBeNull();
+        result.IsSuccess.ShouldBeFalse();
+        result.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+        result.Error.ShouldNotBeNull();
     }
 
     [Fact]
@@ -72,7 +76,8 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
 
         // Assert
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(productId);
+        result.Value.ShouldNotBeNull();
+        result.Value.Id.ShouldBe(productId);
     }
 
     [Fact]
@@ -83,16 +88,17 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
         using var dbContext = _fixture.CreateDemoTiendaContext(transaction);
         var productoService = GetProductoService(dbContext);
 
-        var newProduct = new Producto { Nombre = "Bocinas", Descripcion = "Bocinas 50w", Precio = 100m, IdCategoria = 5, EsActivo = true };
+        var newProduct = new CreateProductoRequest { Nombre = "Bocinas", Descripcion = "Bocinas 50w", Precio = 100m, IdCategoria = 5, EsActivo = true };
 
         // Act
         var result = await productoService.AddAsync(newProduct);
-        var createdProduct = await dbContext.Productos.FindAsync(result.Id);
+        var createdProduct = await dbContext.Productos.FindAsync(result.Value?.Id);
 
         // Assert
-        result.ShouldNotBeNull();
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldNotBeNull();
         createdProduct.ShouldNotBeNull();
-        result.ShouldBeEquivalentTo(createdProduct);
+        result.Value.ShouldBeEquivalentTo(createdProduct.ToDto());
 
     }
 
@@ -104,7 +110,7 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
         using var dbContext = _fixture.CreateDemoTiendaContext(transaction);
         var productoService = GetProductoService(dbContext);
 
-        var productToUpdate = new Producto
+        var productToUpdate = new UpdateProductoRequest
         {
             Id = 1,
             Nombre = "Teclado",
@@ -115,7 +121,7 @@ public class ProductoServiceTest : IClassFixture<SqliteInMemoryFixture>
         };
 
         // Act
-        await productoService.UpdateAsync(productToUpdate);
+        await productoService.UpdateAsync(productToUpdate.Id, productToUpdate);
 
         // Assert
         var updatedProduct = await dbContext.Productos.FirstAsync(x => x.Id == productToUpdate.Id);

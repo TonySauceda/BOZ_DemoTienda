@@ -1,6 +1,6 @@
-﻿using DemoTienda.Application.Interfaces;
+﻿using DemoTienda.Application.DTOs.Categoria;
+using DemoTienda.Application.Extensions;
 using DemoTienda.Application.Services;
-using DemoTienda.Domain.Entities;
 using DemoTienda.Infraestructure.Context;
 using DemoTienda.Infraestructure.Repository;
 using DemoTienda.Mocks;
@@ -43,7 +43,7 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
         result.Count().ShouldBe(categories.Count);
-        result.ShouldBeEquivalentTo(categories);
+        result.ShouldBeEquivalentTo(categories.ToDto());
     }
 
     [Fact]
@@ -57,7 +57,9 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
         var result = await categoriaService.GetByIdAsync(int.MaxValue);
 
         // Assert
-        result.ShouldBeNull();
+        result.IsSuccess.ShouldBeFalse();
+        result.StatusCode.ShouldBe(System.Net.HttpStatusCode.NotFound);
+        result.Error.ShouldNotBeNull();
     }
 
     [Fact]
@@ -73,7 +75,8 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
 
         // Assert
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(categoryId);
+        result.Value.ShouldNotBeNull();
+        result.Value.Id.ShouldBe(categoryId);
     }
 
     [Fact]
@@ -84,17 +87,17 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
         using var dbContext = _fixture.CreateDemoTiendaContext(transaction);
         var categoriaService = GetCategoriaService(dbContext);
 
-        var newCategory = new Categoria { Nombre = "Ropa", Descripcion = "Ropa juvenil", EsActiva = true };
+        var newCategory = new CreateCategoriaRequest { Nombre = "Ropa", Descripcion = "Ropa juvenil", EsActiva = true };
 
         // Act
         var result = await categoriaService.AddAsync(newCategory);
-        var createdCategory = await dbContext.Categorias.FindAsync(result.Id);
+        var createdCategory = await dbContext.Categorias.FindAsync(result.Value?.Id);
 
         // Assert
-        result.ShouldNotBeNull();
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldNotBeNull();
         createdCategory.ShouldNotBeNull();
-        result.ShouldBeEquivalentTo(createdCategory);
-
+        result.Value.ShouldBeEquivalentTo(createdCategory.ToDto());
     }
 
     [Fact]
@@ -105,7 +108,7 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
         using var dbContext = _fixture.CreateDemoTiendaContext(transaction);
         var categoriaService = GetCategoriaService(dbContext);
 
-        var categoryToUpdate = new Categoria
+        var categoryToUpdate = new UpdateCategoriaRequest
         {
             Id = 1,
             Nombre = "Electrónica",
@@ -114,7 +117,7 @@ public class CategoriaServiceTest : IClassFixture<SqliteInMemoryFixture>
         };
 
         // Act
-        await categoriaService.UpdateAsync(categoryToUpdate);
+        await categoriaService.UpdateAsync(categoryToUpdate.Id, categoryToUpdate);
 
         // Assert
         var updatedCategory = await dbContext.Categorias.FirstAsync(x => x.Id == categoryToUpdate.Id);

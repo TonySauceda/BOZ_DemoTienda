@@ -1,4 +1,6 @@
-﻿using DemoTienda.Application.Services;
+﻿using DemoTienda.Api.Extensions;
+using DemoTienda.Application.DTOs.Categoria;
+using DemoTienda.Application.Services;
 using DemoTienda.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,9 +20,18 @@ namespace DemoTiendaApiController.Controllers
             _logger = logger;
         }
 
-        // GET: api/Categorias
+        /// <summary>
+        /// Returns a list of all products.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint retrieves all products from the store.
+        /// </remarks>
+        /// <returns>A list of product objects.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategorias()
+        [ProducesResponseType(typeof(IEnumerable<CategoriaResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<IEnumerable<CategoriaResponse>>> GetCategorias()
         {
             _logger.LogInformation("Request: {url}", HttpContext.Request.Path.Value);
             return Ok(await _categoriaService.ListAsync());
@@ -30,38 +41,54 @@ namespace DemoTiendaApiController.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Categoria>> GetCategoria(int id)
         {
-            var categoria = await _categoriaService.GetByIdAsync(id);
+            var result = await _categoriaService.GetByIdAsync(id);
 
-            return categoria is null ? NotFound() : Ok(categoria);
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
+
+            return Ok(result.Value);
         }
 
         // PUT: api/Categorias/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCategoria(int id, Categoria categoria)
+        public async Task<IActionResult> PutCategoria(int id, UpdateCategoriaRequest updateCategoriaRequest)
         {
-            if (id != categoria.Id) return BadRequest();
+            var result = await _categoriaService.UpdateAsync(id, updateCategoriaRequest);
 
-            await _categoriaService.UpdateAsync(categoria);
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
 
             return NoContent();
         }
 
         // POST: api/Categorias
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Categoria>> PostCategoria(Categoria categoria)
+        public async Task<ActionResult<Categoria>> PostCategoria(CreateCategoriaRequest createCategoriaRequest)
         {
-            var newCategoria = await _categoriaService.AddAsync(categoria);
+            var result = await _categoriaService.AddAsync(createCategoriaRequest);
 
-            return CreatedAtAction("GetCategoria", new { id = newCategoria.Id }, newCategoria);
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
+
+            return CreatedAtAction("GetCategoria", new { id = result.Value?.Id }, result.Value);
         }
 
         // DELETE: api/Categorias/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategoria(int id)
         {
-            await _categoriaService.DeleteAsync(id);
+            var result = await _categoriaService.DeleteAsync(id);
+
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
 
             return NoContent();
         }

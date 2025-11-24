@@ -4,6 +4,7 @@ using DemoTienda.Infraestructure.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace DemoTienda.Infraestructure.Repository;
+
 public class CategoriaRepository : ICategoriaRepository
 {
     private readonly DemoTiendaContext _dbContext;
@@ -15,8 +16,6 @@ public class CategoriaRepository : ICategoriaRepository
 
     public async Task<Categoria> AddAsync(Categoria entity)
     {
-        entity.FechaCreacion = DateTime.UtcNow;
-
         _dbContext.Categorias.Add(entity);
         await _dbContext.SaveChangesAsync();
 

@@ -1,8 +1,9 @@
-﻿using DemoTienda.Application.Services;
+﻿using DemoTienda.Api.Extensions;
+using DemoTienda.Application.DTOs.Producto;
+using DemoTienda.Application.Services;
 using DemoTienda.Domain.Entities;
 using DemoTiendaApiController.Settings;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace DemoTiendaApiController.Controllers
@@ -31,38 +32,62 @@ namespace DemoTiendaApiController.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Producto>> GetProducto(int id)
         {
-            var producto = await _productoService.GetByIdAsync(id);
+            var result = await _productoService.GetByIdAsync(id);
 
-            return producto is null ? NotFound() : Ok(producto);
+            if (!result.IsSuccess)
+            {
+                var problemDetails = new ProblemDetails
+                {
+                    Title = result.Title,
+                    Status = (int)result.StatusCode,
+                    Instance = HttpContext.Request.Path
+                };
+                problemDetails.Extensions.Add("errors", result.Error?.ToDictionary());
+
+                return StatusCode(problemDetails.Status.Value, problemDetails);
+            }
+
+            return Ok(result.Value);
         }
 
         // PUT: api/Productos/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProducto(int id, Producto producto)
+        public async Task<IActionResult> PutProducto(int id, UpdateProductoRequest updateProductoRequest)
         {
-            if (id != producto.Id) return BadRequest();
+            var result = await _productoService.UpdateAsync(id, updateProductoRequest);
 
-            await _productoService.UpdateAsync(producto);
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
 
             return NoContent();
         }
 
         // POST: api/Productos
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Producto>> PostProducto(Producto producto)
+        public async Task<ActionResult<Producto>> PostProducto(CreateProductoRequest createProductoRequest)
         {
-            var newProducto = await _productoService.AddAsync(producto);
+            var result = await _productoService.AddAsync(createProductoRequest);
 
-            return CreatedAtAction("GetProducto", new { id = newProducto.Id }, newProducto);
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
+
+            return CreatedAtAction("GetProducto", new { id = result.Value?.Id }, result.Value);
         }
 
         // DELETE: api/Productos/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(int id)
         {
-            await _productoService.DeleteAsync(id);
+            var result = await _productoService.DeleteAsync(id);
+
+            if (!result.IsSuccess)
+            {
+                return result.ToObjectResult();
+            }
 
             return NoContent();
         }
